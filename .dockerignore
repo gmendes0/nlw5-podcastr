@@ -1,0 +1,9 @@
+.dockerignore
+.DS_Store
+.git
+.gitignore
+.next
+build
+Dockerfile
+node_modules
+README.md
