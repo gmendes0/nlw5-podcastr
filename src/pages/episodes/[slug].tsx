@@ -8,6 +8,7 @@ import { covertDurationToTimeString } from "../../utils/convertDurationToTimeStr
 import styles from "../../styles/episode.module.scss";
 import Link from "next/link";
 import Head from "next/head";
+import { usePlayer } from "../../contexts/PlayerContext";
 
 type IRawEpisode = {
   id: string;
@@ -49,10 +50,12 @@ const Episode: React.FC<IProps> = ({ episode }) => {
   //   return <p>Carregando...</p>;
   // }
 
+  const { play } = usePlayer();
+
   return (
     <>
       <Head>
-        <title>Podcastr - {episode.title}</title>
+        <title>{episode.title} - Podcastr</title>
       </Head>
       <div className={styles.container}>
         <div className={styles.episode}>
@@ -70,7 +73,7 @@ const Episode: React.FC<IProps> = ({ episode }) => {
               objectFit="cover"
             />
 
-            <button type="button">
+            <button type="button" onClick={() => play(episode)}>
               <img src="/play.svg" alt="Tocar episódio" />
             </button>
           </div>
