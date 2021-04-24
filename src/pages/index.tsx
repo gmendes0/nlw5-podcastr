@@ -7,6 +7,9 @@ import { api } from "../services/api";
 import { covertDurationToTimeString } from "../utils/convertDurationToTimeString";
 
 import styles from "../styles/home.module.scss";
+import Head from "next/head";
+import { useContext } from "react";
+import { PlayerContext } from "../contexts/PlayerContext";
 
 type IRawEpisode = {
   id: string;
@@ -39,93 +42,100 @@ type IProps = {
 };
 
 const Home: React.FC<IProps> = ({ latestEpisodes, allEpisodes }) => {
+  const { play } = useContext(PlayerContext);
+
   return (
-    <div className={styles.homepage}>
-      <section className={styles.latestEpisodes}>
-        <h2>Últimos lançamentos</h2>
+    <>
+      <Head>
+        <title>Podcastr - Home</title>
+      </Head>
+      <div className={styles.homepage}>
+        <section className={styles.latestEpisodes}>
+          <h2>Últimos lançamentos</h2>
 
-        <ul>
-          {latestEpisodes.map(episode => (
-            <li key={episode.id}>
-              {/**
-               * Otimização de imagem
-               *
-               * A largura e altura aqui é a medida na qual voce quer carregar a imagem
-               * (ela pode ser exibida com um tamanho diferente depois)
-               *
-               * Nesse caso ela está 3x maior que o que vai ser utilizado de fato
-               */}
-              <Image
-                width={192}
-                height={192}
-                src={episode.thumbnail}
-                alt={episode.title}
-                objectFit="cover"
-              />
+          <ul>
+            {latestEpisodes.map(episode => (
+              <li key={episode.id}>
+                {/**
+                 * Otimização de imagem
+                 *
+                 * A largura e altura aqui é a medida na qual voce quer carregar a imagem
+                 * (ela pode ser exibida com um tamanho diferente depois)
+                 *
+                 * Nesse caso ela está 3x maior que o que vai ser utilizado de fato
+                 */}
+                <Image
+                  width={192}
+                  height={192}
+                  src={episode.thumbnail}
+                  alt={episode.title}
+                  objectFit="cover"
+                />
 
-              <div className={styles.episodeDetails}>
-                <Link href={`/episodes/${episode.id}`}>
-                  <a>{episode.title}</a>
-                </Link>
-                <p>{episode.members}</p>
-                <span>{episode.publishedAt}</span>
-                <span>{episode.durationAsString}</span>
-              </div>
-
-              <button type="button">
-                <img src="/play-green.svg" alt="Tocar episódio" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className={styles.allEpisodes}>
-        <h2>Todos episódios</h2>
-
-        <table cellSpacing={0}>
-          <thead>
-            <tr>
-              <th></th>
-              <th>Podcast</th>
-              <th>Integrantes</th>
-              <th>Data</th>
-              <th>Duração</th>
-              <th></th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {allEpisodes.map(episode => (
-              <tr key={episode.id}>
-                <td style={{ width: 72 }}>
-                  <Image
-                    width={120}
-                    height={120}
-                    src={episode.thumbnail}
-                    alt={episode.title}
-                    objectFit="cover"
-                  />
-                </td>
-                <td>
+                <div className={styles.episodeDetails}>
                   <Link href={`/episodes/${episode.id}`}>
                     <a>{episode.title}</a>
                   </Link>
-                </td>
-                <td>{episode.members}</td>
-                <td style={{ width: 100 }}>{episode.publishedAt}</td>
-                <td>{episode.durationAsString}</td>
-                <td>
-                  <button type="button">
-                    <img src="/play-green.svg" alt="Tocar episódio" />
-                  </button>
-                </td>
-              </tr>
+                  <p>{episode.members}</p>
+                  <span>{episode.publishedAt}</span>
+                  <span>{episode.durationAsString}</span>
+                </div>
+
+                <button type="button" onClick={() => play(episode)}>
+                  <img src="/play-green.svg" alt="Tocar episódio" />
+                </button>
+              </li>
             ))}
-          </tbody>
-        </table>
-      </section>
-    </div>
+          </ul>
+        </section>
+
+        <section className={styles.allEpisodes}>
+          <h2>Todos episódios</h2>
+
+          <table cellSpacing={0}>
+            <thead>
+              <tr>
+                <th></th>
+                <th>Podcast</th>
+                <th>Integrantes</th>
+                <th>Data</th>
+                <th>Duração</th>
+                <th></th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {allEpisodes.map(episode => (
+                <tr key={episode.id}>
+                  <td style={{ width: 72 }}>
+                    <Image
+                      width={120}
+                      height={120}
+                      src={episode.thumbnail}
+                      alt={episode.title}
+                      objectFit="cover"
+                    />
+                  </td>
+                  <td>
+                    <Link href={`/episodes/${episode.id}`}>
+                      <a>{episode.title}</a>
+                    </Link>
+                  </td>
+                  <td>{episode.members}</td>
+                  <td style={{ width: 100 }}>{episode.publishedAt}</td>
+                  <td>{episode.durationAsString}</td>
+                  <td>
+                    <button type="button">
+                      <img src="/play-green.svg" alt="Tocar episódio" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </>
   );
 };
 
@@ -179,7 +189,6 @@ export const getStaticProps: GetStaticProps = async () => {
       }),
       duration: episode.file.duration,
       durationAsString: covertDurationToTimeString(episode.file.duration),
-      description: episode.description,
       url: episode.file.url,
     };
 

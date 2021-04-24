@@ -2,12 +2,12 @@ import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Image from "next/image";
-import { useRouter } from "next/router";
 import { api } from "../../services/api";
 import { covertDurationToTimeString } from "../../utils/convertDurationToTimeString";
 
 import styles from "../../styles/episode.module.scss";
 import Link from "next/link";
+import Head from "next/head";
 
 type IRawEpisode = {
   id: string;
@@ -40,50 +40,77 @@ type IProps = {
 };
 
 const Episode: React.FC<IProps> = ({ episode }) => {
-  const router = useRouter();
+  /**
+   * Fallback true: essa verificação faz com que seja exibido algo enquanto as
+   * informações dos parametros (no caso "episode") não foram carregados
+   */
+  //  const router = useRouter();
+  // if (router.isFallback) {
+  //   return <p>Carregando...</p>;
+  // }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.episode}>
-        <div className={styles.thumbnailContainer}>
-          <Link href="/">
+    <>
+      <Head>
+        <title>Podcastr - {episode.title}</title>
+      </Head>
+      <div className={styles.container}>
+        <div className={styles.episode}>
+          <div className={styles.thumbnailContainer}>
+            <Link href="/">
+              <button type="button">
+                <img src="/arrow-left.svg" alt="Voltar" />
+              </button>
+            </Link>
+
+            <Image
+              width={700}
+              height={160}
+              src={episode.thumbnail}
+              objectFit="cover"
+            />
+
             <button type="button">
-              <img src="/arrow-left.svg" alt="Voltar" />
+              <img src="/play.svg" alt="Tocar episódio" />
             </button>
-          </Link>
+          </div>
 
-          <Image
-            width={700}
-            height={160}
-            src={episode.thumbnail}
-            objectFit="cover"
+          <header>
+            <h1>{episode.title}</h1>
+            <span>{episode.members}</span>
+            <span>{episode.publishedAt}</span>
+            <span>{episode.durationAsString}</span>
+          </header>
+
+          <div
+            className={styles.description}
+            dangerouslySetInnerHTML={{ __html: episode.description }}
           />
-
-          <button type="button">
-            <img src="/play.svg" alt="Tocar episódio" />
-          </button>
         </div>
-
-        <header>
-          <h1>{episode.title}</h1>
-          <span>{episode.members}</span>
-          <span>{episode.publishedAt}</span>
-          <span>{episode.durationAsString}</span>
-        </header>
-
-        <div
-          className={styles.description}
-          dangerouslySetInnerHTML={{ __html: episode.description }}
-        />
       </div>
-    </div>
+    </>
   );
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
+  const { data } = await api.get<IRawEpisode[]>("episodes", {
+    params: {
+      _limit: 2,
+      _sort: "published_at",
+      _order: "desc",
+    },
+  });
+
+  const paths = data.map(episode => ({ params: { slug: episode.id } }));
+
   return {
-    paths: [],
-    fallback: "blocking",
+    paths, // páginas que serão geradas no momento do build
+    /**
+     * Fallback false: retorna 404 para os paths que não foram passados acima
+     * Fallback true: executa o que está no getStaticProps no lado do client
+     * Fallback blocking: executa o que está no getStaticProps no lado do server
+     */
+    fallback: "blocking", // comportamento das páginas que não foram geradas no momento do build
   };
 };
 
