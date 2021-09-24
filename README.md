@@ -14,7 +14,7 @@ This is a project developed during the **[Next Level Week](https://nextlevelweek
 
 ## 🔖 Result
 
-The final result is available at: **https://podcastr.mendesgo.com**
+The final result is available at: **https://nlw5-podcastr-wine.vercel.app**
 
 <h1 align="center">
   <img src="./public/preview.png" title="Podcastr Layout" alt="Podcastr Layout" />
